@@ -65,7 +65,10 @@ const StaffSignUpForm = () => {
         )}`;
         const response = await axios.get(url);
         if (response.data[0] !== undefined) {
-          sessionStorage.setItem("selectedStaffEmail", JSON.stringify(response.data[0].Email));
+          sessionStorage.setItem(
+            "selectedStaffEmail",
+            JSON.stringify(response.data[0].Email)
+          );
           sessionStorage.setItem("staffEmail", JSON.stringify(""));
           history.push("/login/staff");
         }
@@ -192,7 +195,7 @@ const StaffSignUpForm = () => {
   };
 
   return (
-    <main className="login">
+    <main className="lec-signup">
       <div className="back-img">
         <img src={Uni} />
       </div>

@@ -8,10 +8,10 @@
 }
 
 .login {
-  margin-top: -40px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  height: calc(100vh - 160px);
 }
 
 .back-img {
@@ -22,13 +22,13 @@
 .back-img img {
   height: 100%;
   width: 100%;
+  object-fit: cover;
 }
 .login-form {
-  margin-top: -10px;
+  margin-top: 10px;
   width: 50%;
   display: flex;
   flex-direction: column;
-  /* justify-content: center; */
   align-items: center;
 }
 
@@ -48,7 +48,6 @@ input {
   height: 40px;
   letter-spacing: 0;
   line-height: 15px;
-  padding: 0;
   padding-left: 17px;
   position: relative;
   width: 450px;
@@ -81,6 +80,7 @@ p {
   margin-top: 10px;
   font-size: 20px;
   font-weight: 600;
+  text-wrap: nowrap;
 }
 
 .google-btn {
@@ -120,7 +120,7 @@ p {
 }
 
 .std-login-form {
-  margin-top: 28px;
+  margin-top: 30px;
   width: 50%;
   display: flex;
   flex-direction: column;
@@ -139,9 +139,51 @@ p {
   margin-top: 40px;
   font-size: 18px;
   font-weight: 400;
+  text-wrap: nowrap;
 }
 
 #create-btn {
   font-size: 15px;
   margin-top: 30px;
+}
+
+@media only screen and (max-width: 576px) {
+  .login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .login-form {
+    padding-top: 20px;
+  }
+
+  .login input {
+    width: 400px;
+    font-size: 16px;
+  }
+
+  .back-img {
+    display: none;
+  }
+}
+
+@media only screen and (min-width: 576px) and (max-width: 1024px) {
+  .login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .login-form {
+    padding-top: 20px;
+  }
+
+  .login input {
+    font-size: 18px;
+  }
+
+  .back-img {
+    display: none;
+  }
 }
