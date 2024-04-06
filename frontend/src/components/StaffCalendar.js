@@ -24,7 +24,7 @@ import ColorCode from "./helpers/ColorCode";
 L10n.load({
   "en-US": {
     schedule: {
-      saveButton: "Add",
+      saveButton: "Save",
       cancelButton: "Close",
       deleteButton: "Remove",
       newEvent: "Appointment Details",
@@ -199,6 +199,9 @@ const StaffCalendar = ({ socket }) => {
     getStaffDetails();
     fetchData();
     setBlocked(false);
+    socket.on("block time slot", () => {
+      fetchData();
+    });
   }, [blocked]);
 
   const onDragStart = (e) => {

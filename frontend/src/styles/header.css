@@ -78,7 +78,7 @@
 
 .user-type option:hover {
   color: #a1cceb;
-  background-color: #500412;
+  background-color: rgb(80, 4, 18);
 }
 
 .loginbtn {

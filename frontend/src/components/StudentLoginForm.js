@@ -43,6 +43,7 @@ const StudentLoginForm = ({ socket }) => {
       }
     } catch (err) {
       console.log(err.message);
+      setMessage("Invalid email or password");
     }
   };
 
@@ -50,6 +51,8 @@ const StudentLoginForm = ({ socket }) => {
     e.preventDefault();
     if (email === "" || password === "") {
       setMessage("Please fill all the fields");
+    }else if (!email.includes("engug.ruh.ac.lk")) {
+      setMessage("Invalid email");
     } else {
       handleLogin(email, password);
     }

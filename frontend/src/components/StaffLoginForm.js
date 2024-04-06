@@ -28,18 +28,21 @@ const StaffLoginForm = ({ socket }) => {
       }
     } catch (err) {
       console.log(err.message);
+      setMessage("Invalid email or password");
     }
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (email !== "" || password !== "") {
+    if (email === "" || password === "") {
+      setMessage("Please fill all the fields");
+    } else if (!email.includes("eng.ruh.ac.lk")){
+      setMessage("Invalid email");
+    } else{
       handleStaffLogin(
         JSON.parse(sessionStorage.getItem("selectedStaffEmail")),
         password
       );
-    } else {
-      setMessage("Please fill all the fields");
     }
   };
 

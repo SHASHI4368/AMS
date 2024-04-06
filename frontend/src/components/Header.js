@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import Logo from "../resources/Logo2.png";
+import Logo from "../resources/LogoNew1.png";
 import "../styles/header.css";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
@@ -115,9 +115,9 @@ const Header = ({ socket }) => {
               options={["DCEE", "DEIE", "DMME", "MENA", "Computer"]}
               handleOptionSelect={handleDepartmentSelect}
             />
-            <button className="loginbtn" id="appointments">
+            {/* <button className="loginbtn" id="appointments">
               APPOINTMENTS
-            </button>
+            </button> */}
             <button
               className="loginbtn"
               id="logout-button"
