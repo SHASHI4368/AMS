@@ -120,7 +120,7 @@ const StudentSignUpForm = (
   };
 
   return (
-    <main className="login">
+    <main className="lec-signup">
       <div className="back-img">
         <img src={Uni} />
       </div>

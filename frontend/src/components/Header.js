@@ -5,11 +5,15 @@ import { useHistory } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import DropdownButton from "./helpers/DropdownButton";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 const Header = ({ socket }) => {
   const [userType, setUserType] = useState(
     JSON.parse(sessionStorage.getItem("userType")) || "Student"
   );
+
+  const [clicked, setClicked] = useState(false);
 
   useEffect(() => {
     if (sessionStorage.getItem("userType") === null) {
@@ -89,6 +93,8 @@ const Header = ({ socket }) => {
     window.location.reload();
   };
 
+  const handleClick = () => {
+    setClicked(!clicked);
   const handleAppointments = () => {
     history.push("/staff/appointments");
   };
@@ -156,6 +162,56 @@ const Header = ({ socket }) => {
             </button>
           </div>
         )}
+
+      {JSON.parse(sessionStorage.getItem("authorized")) === true &&
+        JSON.parse(sessionStorage.getItem("userType")) === "Student" &&
+        clicked === true && (
+          <div className="mobile-buttons">
+            <button className="loginbtn" onClick={handleLogoutButton}>
+              HOME
+            </button>
+            <DropdownButton
+              dropdownName="DEPARTMENT"
+              options={["DCEE", "DEIE", "DMME", "MENA", "Computer"]}
+              handleOptionSelect={handleDepartmentSelect}
+            />
+            <button className="loginbtn" id="appointments">
+              APPOINTMENTS
+            </button>
+            <button
+              className="loginbtn"
+              id="logout-button"
+              onClick={handleLogoutButton}
+            >
+              LOGOUT
+            </button>
+          </div>
+        )}
+      {JSON.parse(sessionStorage.getItem("authorized")) === true &&
+        JSON.parse(sessionStorage.getItem("userType")) === "Staff" &&  clicked === true && (
+          <div className="mobile-buttons">
+            <button className="loginbtn" onClick={handleLogoutButton}>
+              HOME
+            </button>
+            <button className="loginbtn" id="appointments">
+              APPOINTMENTS
+            </button>
+            <button
+              className="loginbtn"
+              id="appointments"
+              onClick={handleStaffCalendar}
+            >
+              CALENDAR
+            </button>
+            <button
+              className="loginbtn"
+              id="logout-button"
+              onClick={handleLogoutButton}
+            >
+              LOGOUT
+            </button>
+          </div>
+        )}
       {JSON.parse(sessionStorage.getItem("authorized")) === false && (
         <div className="buttons">
           <DropdownButton
@@ -166,8 +222,28 @@ const Header = ({ socket }) => {
           />
         </div>
       )}
+
+{JSON.parse(sessionStorage.getItem("authorized")) === false &&  clicked === true && (
+        <div className="login-buttons">
+          <DropdownButton
+            dropdownName="LOGIN"
+            options={["Student", "Staff"]}
+            handleOptionSelect={handleLogin}
+            id="loginbtn"
+          />
+        </div>
+      )}
+      
+      <div className="mobile" onClick={handleClick}>
+        {clicked ? (
+          <FontAwesomeIcon icon={faTimes} />
+        ) : (
+          <FontAwesomeIcon icon={faBars} />
+        )}
+      </div>
     </div>
   );
 };
+}
 
 export default Header;
