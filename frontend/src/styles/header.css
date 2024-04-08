@@ -10,18 +10,18 @@
   height: 160px;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Use space-between to push logo to the left and buttons to the right */
+  justify-content: space-between;
   background-color: #a1cceb;
 }
 
 .header .logo {
-  height: 100%; /* Set height to 100% of container */
-  width: auto; /* Let the width adjust based on the height */
-  max-width: 100%; /* Ensure the image doesn't overflow */
+  height: 100%;
+  width: auto;
+  max-width: 100%; 
   margin-left: 80px;
   padding: 5px;
-  object-fit: contain; /* Fit the image inside the container while preserving aspect ratio */
-}
+  object-fit: contain; 
+} */
 
 .header .logo:hover {
   cursor: pointer;
@@ -122,7 +122,7 @@
   }
 }
 
-@media only screen and (max-width: 768px) {
+ @media only screen and (max-width: 768px) {
   .header {
     justify-content: space-between;
   }

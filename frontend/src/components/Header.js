@@ -95,6 +95,7 @@ const Header = ({ socket }) => {
 
   const handleClick = () => {
     setClicked(!clicked);
+  };
   const handleAppointments = () => {
     history.push("/staff/appointments");
   };
@@ -188,7 +189,8 @@ const Header = ({ socket }) => {
           </div>
         )}
       {JSON.parse(sessionStorage.getItem("authorized")) === true &&
-        JSON.parse(sessionStorage.getItem("userType")) === "Staff" &&  clicked === true && (
+        JSON.parse(sessionStorage.getItem("userType")) === "Staff" &&
+        clicked === true && (
           <div className="mobile-buttons">
             <button className="loginbtn" onClick={handleLogoutButton}>
               HOME
@@ -223,17 +225,18 @@ const Header = ({ socket }) => {
         </div>
       )}
 
-{JSON.parse(sessionStorage.getItem("authorized")) === false &&  clicked === true && (
-        <div className="login-buttons">
-          <DropdownButton
-            dropdownName="LOGIN"
-            options={["Student", "Staff"]}
-            handleOptionSelect={handleLogin}
-            id="loginbtn"
-          />
-        </div>
-      )}
-      
+      {JSON.parse(sessionStorage.getItem("authorized")) === false &&
+        clicked === true && (
+          <div className="login-buttons">
+            <DropdownButton
+              dropdownName="LOGIN"
+              options={["Student", "Staff"]}
+              handleOptionSelect={handleLogin}
+              id="loginbtn"
+            />
+          </div>
+        )}
+
       <div className="mobile" onClick={handleClick}>
         {clicked ? (
           <FontAwesomeIcon icon={faTimes} />
@@ -244,6 +247,5 @@ const Header = ({ socket }) => {
     </div>
   );
 };
-}
 
 export default Header;
