@@ -18,8 +18,74 @@ import Department from "./components/Department";
 import StaffHome from "./components/StaffHome";
 import StudentCalendar from "./components/StudentCalendar";
 import StaffCalendar from "./components/StaffCalendar";
+import StaffAppointments from "./components/StaffAppointments";
+import { message } from "antd";
+
+import { io } from "socket.io-client";
+
+const URL = "http://localhost:8080";
+const socket = io(URL, {
+  autoConnect: false,
+});
 
 function App() {
+  const notify = (msg) => {
+    message.success(msg);
+    if ("Notification" in window) {
+      if (Notification.permission === "granted") {
+        new Notification(msg);
+      } else {
+        Notification.requestPermission().then((res) => {
+          if (res === "granted") {
+            new Notification(msg);
+          } else if (res === "denied") {
+            console.log("Access denied");
+          } else if (res === "default") {
+            console.log("Notification permission not given");
+          }
+        });
+      }
+    } else {
+      console.log("Notifications not supported");
+    }
+  };
+
+  useEffect(() => {
+    socket.on("add appointment", (msg) => {
+      if (
+        (msg.lecMail = JSON.parse(
+          sessionStorage.getItem("selectedStaffEmail")
+        )) &&
+        JSON.parse(sessionStorage.getItem("userType")) === "Staff"
+      ) {
+        notify("New appointment added!");
+      }
+    });
+
+    socket.on("delete appointment", (msg) => {
+      if (
+        (msg.lecMail = JSON.parse(
+          sessionStorage.getItem("selectedStaffEmail")
+        )) &&
+        JSON.parse(sessionStorage.getItem("userType")) === "Staff" &&
+        msg.EventType !== "Blocked"
+      ) {
+        notify("Appointment deleted!");
+      }
+    });
+
+    socket.on("change appointment", (msg) => {
+      if (
+        (msg.lecMail = JSON.parse(
+          sessionStorage.getItem("selectedStaffEmail")
+        )) &&
+        JSON.parse(sessionStorage.getItem("userType")) === "Staff"
+      ) {
+        notify("Appointment changed!");
+      }
+    });
+  }, [socket]);
+
   const [authorized, setAuthorized] = useState(false);
 
   const [staffList, setStaffList] = useState([]);
@@ -41,46 +107,73 @@ function App() {
         }
       }
     };
-
     getAllStaff();
   }, []);
 
   useEffect(() => {
-    const getToken = async () => {
+    const getStdToken = async () => {
+      console.log("Getting token");
       try {
         const url = `http://localhost:8080/db/student/refresh`;
         const response = await axios.get(url, {
           withCredentials: true,
         });
+
         const accessToken = response.data.accessToken;
+        if (accessToken !== undefined) {
+          socket.connect();
+        }
         setAuthorized(true);
         return accessToken;
       } catch (err) {
-        // setAuthorized(false);
-        // sessionStorage.setItem("authorized", JSON.stringify(false));
+        setAuthorized(false);
         console.log(err);
       }
     };
 
-    if (getToken() !== undefined) {
-      setAuthorized(true);
-      // sessionStorage.setItem("authorized", JSON.stringify(true));
+    const getStaffToken = async () => {
+      try {
+        const url = `http://localhost:8080/db/staff/refresh`;
+        const response = await axios.get(url, {
+          withCredentials: true,
+        });
+        const accessToken = response.data.accessToken;
+        if (accessToken !== undefined) {
+          socket.connect();
+        }
+        setAuthorized(true);
+        return accessToken;
+      } catch (err) {
+        setAuthorized(false);
+        console.log(err);
+      }
+    };
+    if (JSON.parse(sessionStorage.getItem("userType")) === "Student") {
+      if (getStdToken() !== undefined) {
+        setAuthorized(true);
+        // sessionStorage.setItem("authorized", JSON.stringify(true));
+      }
+    } else if (JSON.parse(sessionStorage.getItem("userType")) === "Staff") {
+      if (getStaffToken() !== undefined) {
+        setAuthorized(true);
+        // sessionStorage.setItem("authorized", JSON.stringify(true));
+      }
     }
   }, []);
 
   return (
     <div className="App">
-      <Header />
+      <Header socket={socket} />
       <Switch>
         <Route exact path="/" component={Home} />
         <Route exact path="/login/student">
-          <StudentLoginForm />
+          <StudentLoginForm socket={socket} />
         </Route>
         <Route exact path="/login/staff">
-          <StaffLoginForm />
+          <StaffLoginForm socket={socket} />
         </Route>
         <Route exact path="/signup/staff">
-          <StaffSignUpForm />
+          <StaffSignUpForm socket={socket} />
         </Route>
         <Route exact path="/signup/student">
           <StudentSignUpForm />
@@ -96,16 +189,19 @@ function App() {
         </Route>
         <Route exact path="/student/home" component={StudentHome} />
         <Route exact path="/student/department">
-          <Department staffList={staffList} />
+          <Department />
         </Route>
         <Route exact path="/student/calendar">
-          <StudentCalendar />
+          <StudentCalendar socket={socket} />
         </Route>
         <Route exact path="/staff/calendar">
-          <StaffCalendar />
+          <StaffCalendar socket={socket} />
         </Route>
         <Route exact path="/staff/home">
           <StaffHome />
+        </Route>
+        <Route exact path="/staff/appointments">
+          <StaffAppointments socket={socket} />
         </Route>
       </Switch>
       <Footer />

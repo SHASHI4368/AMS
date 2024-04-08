@@ -2,7 +2,7 @@ import React from 'react';
 import Uni from "../resources/University.jpg";
 
 
-const StaffHome = () => {
+const StaffHome = ({ socket }) => {
   return (
     <div className="caption">
       <h2>APPOINTMENT MANAGEMENT SYSTEM</h2>
@@ -10,6 +10,6 @@ const StaffHome = () => {
       <img src={Uni} alt="University" />
     </div>
   );
-}
+};
 
 export default StaffHome

@@ -26,7 +26,7 @@ L10n.load({
       saveButton: "Add",
       cancelButton: "Close",
       deleteButton: "Remove",
-      newEvent: "Add Event",
+      newEvent: "Appointment Details",
     },
   },
 });
@@ -85,7 +85,7 @@ const eventTemplate = (e) => {
   );
 };
 
-const StudentCalendar = () => {
+const StudentCalendar = ({ socket }) => {
   const [selectedStaff, setSelectedStaff] = useState(
     JSON.parse(sessionStorage.getItem("selectedStaff"))
   );
@@ -127,42 +127,61 @@ const StudentCalendar = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getAllAppointments(selectedStaff.Email);
-        setAppointments({
-          dataSource: data.map((item) => ({
-            Id: item.Id,
-            Subject:
-              item.Student_reg ===
-              JSON.parse(sessionStorage.getItem("regNumber"))
-                ? item.Subject
-                : item.Subject === "Blocked"
-                ? "Blocked"
-                : "Reserverd",
-            EventType: item.Apt_status,
-            StartTime: new Date(item.StartTime),
-            EndTime: new Date(item.EndTime),
-            Description: item.Description,
-            IsBlock:
-              item.Student_reg ===
-              JSON.parse(sessionStorage.getItem("regNumber"))
-                ? false
-                : true,
-            Color: getColor(item.Apt_status),
-          })),
-          fields: {
-            subject: { default: "No title is provided" },
-          },
-        });
-      } catch (err) {
-        console.log(err);
-      }
-    };
+  const fetchData = async () => {
+    try {
+      const data = await getAllAppointments(selectedStaff.Email);
+      setAppointments({
+        dataSource: data.map((item) => ({
+          Id: item.Id,
+          Subject:
+            item.Student_reg === JSON.parse(sessionStorage.getItem("regNumber"))
+              ? item.Subject
+              : item.Subject === "Blocked"
+              ? "Blocked"
+              : "Reserverd",
+          EventType: item.Apt_status,
+          StartTime: new Date(item.StartTime),
+          EndTime: new Date(item.EndTime),
+          Description: item.Description,
+          IsBlock:
+            item.Student_reg === JSON.parse(sessionStorage.getItem("regNumber"))
+              ? false
+              : true,
+          Color: getColor(item.Apt_status),
+        })),
+        fields: {
+          subject: { default: "No title is provided" },
+        },
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    socket.on("block time slot", () => {
+      fetchData();
+    });
+    socket.on("add appointment", (msg) => {
+      if (
+        (msg.reg = JSON.parse(sessionStorage.getItem("regNumber"))) &&
+        JSON.parse(sessionStorage.getItem("userType")) === "Student"
+      ) {
+        fetchData();
+      }
+    });
+    socket.on("delete appointment", () => {
+      fetchData();
+    });
+
+    socket.on("change appointment", (msg) => {
+      fetchData();
+    });
+  }, [socket]);
 
   const onDragStart = (e) => {
     e.interval = 10;
@@ -220,7 +239,10 @@ const StudentCalendar = () => {
                 placeholder="Choose status"
                 data-name="EventType"
                 className="e-field"
-                dataSource={["New", "Unable"]}
+                // dataSource={["New", "Unable"]}
+                dataSource={
+                  e.EventType === "Unable" ? ["Unable"] : ["New", "Unable"]
+                }
                 value="New"
               />
             </td>
@@ -290,7 +312,6 @@ const StudentCalendar = () => {
         Apt_status,
       });
       sendAppointmentAddedMail(
-        Subject,
         Description,
         StartTime,
         EndTime,
@@ -339,7 +360,12 @@ const StudentCalendar = () => {
         EndTime,
         Apt_status,
       });
-      console.log(response.data);
+      sendAppointmentChangeMail(
+        Description,
+        StartTime,
+        EndTime,
+        selectedStaff.Email
+      );
     } catch (err) {
       console.log(err);
     }
@@ -350,7 +376,12 @@ const StudentCalendar = () => {
     console.log(e.data);
     if (e.data != null) {
       if (e.type === "DeleteAlert") {
-        deleteAppointment(selectedAptId);
+        deleteAppointment(
+          e.data.Description,
+          e.data.StartTime,
+          e.data.EndTime,
+          e.data.EventType
+        );
       } else if (
         e.data.Subject !== "No title is provided" &&
         selectedAptId === undefined
@@ -367,7 +398,6 @@ const StudentCalendar = () => {
           e.data.EndTime,
           e.data.EventType
         );
-        // window.location.reload();
       } else if (
         e.data !== null &&
         selectedAptId !== undefined &&
@@ -381,7 +411,6 @@ const StudentCalendar = () => {
           e.data.EventType,
           selectedAptId
         );
-        window.location.reload();
       }
     } else {
       console.log(true);
@@ -393,25 +422,36 @@ const StudentCalendar = () => {
     console.log(e);
   };
 
-  const deleteAppointment = async (Id) => {
+  const deleteAppointment = async (
+    Description,
+    StartTime,
+    EndTime,
+    EventType
+  ) => {
     try {
-      const url = `http://localhost:8080/db/appointment/${Id}`;
+      const url = `http://localhost:8080/db/appointment/${selectedAptId}`;
       const response = await axios.delete(url);
-      console.log(response.data);
+      sendAppointmentDeleteMail(
+        Description,
+        StartTime,
+        EndTime,
+        selectedStaff.Email,
+        EventType
+      );
     } catch (err) {
       console.log(err);
     }
   };
 
-const getStudentDetails = async (Reg_number) => {
-  try {
-    const url = `http://localhost:8080/db/student/details/${Reg_number}`;
-    const { data } = await axios.get(url, Reg_number);
-    return data;
-  } catch (err) {
-    console.log(err);
-  }
-};
+  const getStudentDetails = async (Reg_number) => {
+    try {
+      const url = `http://localhost:8080/db/student/details/${Reg_number}`;
+      const { data } = await axios.get(url, Reg_number);
+      return data;
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const getDate = (value) => {
     const date = new Date(value);
@@ -422,18 +462,14 @@ const getStudentDetails = async (Reg_number) => {
     return formattedDate;
   };
 
-  const sendAppointmentAddedMail = async (
-    subject,
-    description,
-    from,
-    to,
-    lecMail
-  ) => {
+  const sendAppointmentAddedMail = async (description, from, to, lecMail) => {
+    console.log("Sending email");
     const student = await getStudentDetails(
       JSON.parse(sessionStorage.getItem("regNumber"))
     );
     try {
       const url = `http://localhost:8080/mail/student/request/appointment`;
+      const subject = "Request for an appointment";
       const content = `
         <h1>${subject}</h1>
         <h2>Student Details:</h2>
@@ -448,8 +484,77 @@ const getStudentDetails = async (Reg_number) => {
         <p>Time: ${getTime(from)} - ${getTime(to)}</p>
         <p>Description: ${description}</p>
       `;
-      const { data } = await axios.post(url, { lecMail, content});
-      console.log(data);
+      const { data } = await axios.post(url, { lecMail, subject, content });
+      console.log(student[0].Reg_number);
+      const reg = student[0].Reg_number;
+      const msg = { lecMail, reg };
+      socket.emit("add appointment", msg);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const sendAppointmentChangeMail = async (description, from, to, lecMail) => {
+    console.log("Sending email");
+    const student = await getStudentDetails(
+      JSON.parse(sessionStorage.getItem("regNumber"))
+    );
+    try {
+      const url = `http://localhost:8080/mail/student/request/appointment`;
+      const subject = "Unable to attend the appointment";
+      const content = `
+        <h2>Student Details:</h2>
+        <p>Reg Number: ${student[0].Reg_number}</p>
+        <p>Name: ${student[0].First_name} ${student[0].Last_name}</p>
+        <p>Department: ${student[0].Department}</p>
+        <p>Email: ${student[0].Email}</p>
+        <p>Batch: ${student[0].Batch}</p>
+        <br>
+        <h2>Appointment Description:</h2>
+        <p>Subject: ${subject}</p>
+        <p>Date: ${getDate(from)}</p>
+        <p>Time: ${getTime(from)} - ${getTime(to)}</p>
+        <p>Description: ${description}</p>
+      `;
+      const { data } = await axios.post(url, { lecMail, subject, content });
+      // const reg = student[0].Reg_number;
+      const msg = { lecMail };
+      socket.emit("change appointment", msg);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const sendAppointmentDeleteMail = async (
+    description,
+    from,
+    to,
+    lecMail,
+    EventType
+  ) => {
+    const student = await getStudentDetails(
+      JSON.parse(sessionStorage.getItem("regNumber"))
+    );
+    try {
+      const url = `http://localhost:8080/mail/student/request/appointment`;
+      const subject = "Student removed the appointment";
+      const content = `
+        <h2>Student Details:</h2>
+        <p>Reg Number: ${student[0].Reg_number}</p>
+        <p>Name: ${student[0].First_name} ${student[0].Last_name}</p>
+        <p>Department: ${student[0].Department}</p>
+        <p>Email: ${student[0].Email}</p>
+        <p>Batch: ${student[0].Batch}</p>
+        <br>
+        <h2>Appointment Description:</h2>
+        <p>Subject: ${subject}</p>
+        <p>Date: ${getDate(from)}</p>
+        <p>Time: ${getTime(from)} - ${getTime(to)}</p>
+        <p>Description: ${description}</p>
+      `;
+      const { data } = await axios.post(url, { lecMail, subject, content });
+      const msg = { lecMail, EventType };
+      socket.emit("delete appointment", msg);
     } catch (err) {
       console.log(err);
     }
@@ -485,6 +590,8 @@ const getStudentDetails = async (Reg_number) => {
           }}
           dragStart={onDragStart}
           dragStop={onDragStop}
+          allowDragAndDrop={false}
+          allowResizing={false}
           resizeStart={onResizeStart}
           resizeStop={onResizeStop}
           editorTemplate={ediitorWindowTemplate}

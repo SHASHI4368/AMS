@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import axios from "axios";
 import Uni from "../resources/University.jpg";
 
-const StudentLoginForm = () => {
+const StudentLoginForm = ({ socket }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -25,7 +25,7 @@ const StudentLoginForm = () => {
     } catch (err) {
       console.log(err);
     }
-  }
+  };
 
   const handleLogin = async (Email, Password) => {
     try {
@@ -36,12 +36,14 @@ const StudentLoginForm = () => {
         sessionStorage.setItem("authorized", JSON.stringify(true));
         getRegNumber(Email);
         console.log("Login successful");
+        socket.connect();
         history.push("/student/home");
       } else {
         setMessage("Invalid email or password");
       }
     } catch (err) {
       console.log(err.message);
+      setMessage("Invalid email or password");
     }
   };
 
@@ -49,6 +51,8 @@ const StudentLoginForm = () => {
     e.preventDefault();
     if (email === "" || password === "") {
       setMessage("Please fill all the fields");
+    }else if (!email.includes("engug.ruh.ac.lk")) {
+      setMessage("Invalid email");
     } else {
       handleLogin(email, password);
     }

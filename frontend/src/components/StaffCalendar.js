@@ -18,18 +18,16 @@ import {
 } from "@syncfusion/ej2-react-schedule";
 import { DropDownListComponent } from "@syncfusion/ej2-react-dropdowns";
 import { DateTimePickerComponent } from "@syncfusion/ej2-react-calendars";
-import { Internationalization } from "@syncfusion/ej2-base";
-
 import { L10n } from "@syncfusion/ej2-base";
 import ColorCode from "./helpers/ColorCode";
 
 L10n.load({
   "en-US": {
     schedule: {
-      saveButton: "Add",
+      saveButton: "Save",
       cancelButton: "Close",
       deleteButton: "Remove",
-      newEvent: "Add Event",
+      newEvent: "Appointment Details",
     },
   },
 });
@@ -37,7 +35,6 @@ L10n.load({
 const getColor = (status) => {
   switch (status) {
     case "New":
-      console.log("New");
       return "#FFD700";
     case "Blocked":
       return "#FF6347";
@@ -50,21 +47,6 @@ const getColor = (status) => {
   }
 };
 
-// const eventTemplate = (e) => {
-//   return (
-//     <div
-//       className="template-wrap"
-//       style={{
-//         background: getColor(e.EventType),
-//         height: "100%",
-//         width: "100%",
-//       }}
-//     >
-//       {e.Subject}
-//     </div>
-//   );
-// };
-
 const getTime = (value) => {
   const date = new Date(value);
   const hours = date.getHours();
@@ -72,7 +54,6 @@ const getTime = (value) => {
   const formattedHours = String(hours).padStart(2, "0");
   const formattedMinutes = String(minutes).padStart(2, "0");
   const formattedTime = `${formattedHours}:${formattedMinutes}`;
-  console.log(formattedTime);
   if (formattedTime === "NaN:NaN") {
     return "";
   } else {
@@ -89,6 +70,7 @@ const getTimeString = (start, end) => {
     return `Time : ${startTime} - ${endTime}`;
   }
 };
+
 const eventTemplate = (e) => {
   const secondaryColor = { background: e.Color };
   const primaryColor_1 = { background: e.Color };
@@ -112,12 +94,7 @@ const eventTemplate = (e) => {
   );
 };
 
-const getDate = (date) => {
-  // const intl = new Internationalization();
-  // return intl.formatDate(date, { type: "date", skeleton: "short" });
-};
-
-const StaffCalendar = () => {
+const StaffCalendar = ({ socket }) => {
   const [selectedStaffEmail, setSelectedStaffEmail] = useState(
     JSON.parse(sessionStorage.getItem("selectedStaffEmail"))
   );
@@ -132,20 +109,32 @@ const StaffCalendar = () => {
   });
 
   const [selectedAptId, setSelectedAptId] = useState(0);
+  const [isDragged, setIsDragged] = useState(false);
+  const [isResized, setIsResized] = useState(false);
 
-  const getDepName = () => {
-    const dep = JSON.parse(sessionStorage.getItem("department"));
-    switch (dep) {
-      case "DCEE":
-        return "Department of Civil and Environmental Engineering";
-      case "DEIE":
-        return "Department of Electrical and Information Engineering";
-      case "DMME":
-        return "Department of Mechanical and Manufacturing Engineering";
-      case "MENA":
-        return "Department of Metallurgical and Materials Engineering";
-      case "Computer":
-        return "Department of Computer Science and Engineering";
+  const [staffDetails, setStaffDetails] = useState({});
+
+  const fetchData = async () => {
+    try {
+      const data = await getAllAppointments(selectedStaffEmail);
+      setAppointments({
+        dataSource: data.map((item) => ({
+          Id: item.Id,
+          Subject: item.Subject || "No title is provided",
+          EventType: item.Apt_status,
+          StartTime: new Date(item.StartTime),
+          EndTime: new Date(item.EndTime),
+          Description: item.Description,
+          Color: getColor(item.Apt_status),
+          StdReg: item.Student_reg,
+          lecMail: item.Lecturer_mail,
+        })),
+        fields: {
+          subject: { default: "No title is provided" },
+        },
+      });
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -160,56 +149,59 @@ const StaffCalendar = () => {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
+    sessionStorage.setItem("isDragged", JSON.stringify(false));
+    const getStaffDetails = async () => {
       try {
-        const data = await getAllAppointments(selectedStaffEmail);
-        setAppointments({
-          dataSource: data.map((item) => ({
-            Id: item.Id,
-            Subject: item.Subject || "No title is provided",
-            EventType: item.Apt_status,
-            StartTime: new Date(item.StartTime),
-            EndTime: new Date(item.EndTime),
-            Description: item.Description,
-            Color: getColor(item.Apt_status),
-            StdReg: item.Student_reg,
-          })),
-          fields: {
-            subject: { default: "No title is provided" },
-          },
-        });
+        const url = `http://localhost:8080/db//staff/${selectedStaffEmail}`;
+        const response = await axios.get(url);
+        setStaffDetails(response.data[0]);
       } catch (err) {
         console.log(err);
       }
     };
-
+    getStaffDetails();
     fetchData();
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
+    socket.on("block time slot", () => {
+      fetchData();
+    });
+    socket.on("add appointment", (msg) => {
+      if (
+        (msg.lecMail = JSON.parse(
+          sessionStorage.getItem("selectedStaffEmail")
+        )) &&
+        JSON.parse(sessionStorage.getItem("userType")) === "Staff"
+      ) {
+        fetchData();
+      }
+    });
+    socket.on("delete appointment", () => {
+      fetchData();
+    });
+    socket.on("change appointment", (msg) => {
+      fetchData();
+    });
+  }, [socket]);
+
+  useEffect(() => {
+    sessionStorage.setItem("isDragged", JSON.stringify(false));
+    const getStaffDetails = async () => {
       try {
-        const data = await getAllAppointments(selectedStaffEmail);
-        setAppointments({
-          dataSource: data.map((item) => ({
-            Id: item.Id,
-            Subject: item.Subject || "No title is provided",
-            EventType: item.Apt_status,
-            StartTime: new Date(item.StartTime),
-            EndTime: new Date(item.EndTime),
-            Description: item.Description,
-          })),
-          fields: {
-            subject: { default: "No title is provided" },
-          },
-        });
+        const url = `http://localhost:8080/db//staff/${selectedStaffEmail}`;
+        const response = await axios.get(url);
+        setStaffDetails(response.data[0]);
       } catch (err) {
         console.log(err);
       }
     };
-
+    getStaffDetails();
     fetchData();
     setBlocked(false);
+    socket.on("block time slot", () => {
+      fetchData();
+    });
   }, [blocked]);
 
   const onDragStart = (e) => {
@@ -218,13 +210,14 @@ const StaffCalendar = () => {
   };
 
   const onDragStop = (e) => {
+    sessionStorage.setItem("isDragged", JSON.stringify(true));
     updateAppointment(
       e.data.Subject,
       e.data.Description,
       e.data.StartTime,
       e.data.EndTime,
       e.data.EventType,
-      selectedAptId
+      e.data.StdReg
     );
   };
 
@@ -234,6 +227,7 @@ const StaffCalendar = () => {
   };
 
   const onResizeStop = (e) => {
+    setIsResized(true);
     updateAppointment(
       e.data.Subject,
       e.data.Description,
@@ -242,6 +236,21 @@ const StaffCalendar = () => {
       e.data.EventType,
       selectedAptId
     );
+  };
+
+  const selectDropdown = (e) => {
+    switch (e.EventType) {
+      case "New":
+        return ["Unable", "Confirmed"];
+      case "Blocked":
+        return ["Blocked"];
+      case "Unable":
+        return ["Unable", "Confirmed"];
+      case "Confirmed":
+        return ["Confirmed", "Unable"];
+      default:
+        return ["Blocked"];
+    }
   };
 
   const ediitorWindowTemplate = (e) => {
@@ -268,7 +277,8 @@ const StaffCalendar = () => {
                 placeholder="Choose status"
                 data-name="EventType"
                 className="e-field"
-                dataSource={["New", "Blocked", "Unable", "Confirmed"]}
+                // dataSource={["New", "Blocked", "Unable", "Confirmed"]}
+                dataSource={selectDropdown(e)}
                 value="Blocked"
               />
             </td>
@@ -338,6 +348,7 @@ const StaffCalendar = () => {
         Apt_status,
       });
       console.log(response.data);
+      socket.emit("block time slot");
     } catch (err) {
       if (err.response) {
         console.log(err.response.data.message);
@@ -369,7 +380,8 @@ const StaffCalendar = () => {
     Description,
     StartTime,
     EndTime,
-    Apt_status
+    Apt_status,
+    StdReg
   ) => {
     try {
       const url = `http://localhost:8080/db/appointment`;
@@ -381,9 +393,126 @@ const StaffCalendar = () => {
         EndTime,
         Apt_status,
       });
-      console.log(response.data);
+      if (StdReg !== null) {
+        sendAppointmentChangeMail(StartTime, EndTime, StdReg, Apt_status);
+      }
+      sessionStorage.setItem("isDragged", JSON.stringify(false));
+      setIsResized(false);
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  const getStudentDetails = async (Reg_number) => {
+    try {
+      const url = `http://localhost:8080/db/student/details/${Reg_number}`;
+      const { data } = await axios.get(url);
+      return data;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const getDate = (value) => {
+    const date = new Date(value);
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const formattedDate = `${day}/${month}/${year}`;
+    return formattedDate;
+  };
+
+  const getAppointment = async (Id) => {
+    try {
+      const url = `http://localhost:8080/db/appointment/${Id}`;
+      const response = await axios.get(url);
+      return response.data[0];
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const sendAppointmentChangeMail = async (from, to, StdReg, Apt_status) => {
+    const msg = { selectedStaffEmail };
+    if (JSON.parse(sessionStorage.getItem("isDragged")) === true) {
+      try {
+        const student = await getStudentDetails(StdReg);
+        const stdMail = student[0].Email;
+        const url = `http://localhost:8080/mail/student/update/appointment`;
+        const subject = "Change of appointment time";
+        const content = `
+        <p>Dear student,</p>
+        <p>Your appointment with ${staffDetails.First_name} ${
+          staffDetails.Last_name
+        } has been changed.</p>
+        <h2>New Appointment Details:</h2>
+        <p>Date: ${getDate(from)}</p>
+        <p>Time: ${getTime(from)} - ${getTime(to)}</p>
+        <br>
+        <p>${staffDetails.First_name} ${staffDetails.Last_name}</p>
+        <p>${staffDetails.Email}</p>
+        <p>${staffDetails.Department}</p>
+      `;
+        const { data } = await axios.post(url, { stdMail, subject, content });
+        const msg = { selectedStaffEmail };
+        socket.emit("change appointment", msg);
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (Apt_status === "Confirmed") {
+      console.log("confirmed");
+      try {
+        const appointment = await getAppointment(selectedAptId);
+        const student = await getStudentDetails(appointment.Student_reg);
+        console.log(appointment.Student_reg);
+        const stdMail = student[0].Email;
+        const url = `http://localhost:8080/mail/student/update/appointment`;
+        const subject = "Appointment confirmed";
+        const content = `
+        <p>Dear student,</p>
+        <p>Your appointment with ${staffDetails.First_name} ${
+          staffDetails.Last_name
+        } has been confirmed.</p>
+        <h2>Appointment Details:</h2>
+        <p>Date: ${getDate(from)}</p>
+        <p>Time: ${getTime(from)} - ${getTime(to)}</p>
+        <br>
+        <p>${staffDetails.First_name} ${staffDetails.Last_name}</p>
+        <p>${staffDetails.Email}</p>
+        <p>${staffDetails.Department}</p>
+      `;
+        const { data } = await axios.post(url, { stdMail, subject, content });
+        socket.emit("change appointment", msg);
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (Apt_status === "Unable") {
+      console.log("confirmed");
+      try {
+        const appointment = await getAppointment(selectedAptId);
+        const student = await getStudentDetails(appointment.Student_reg);
+        console.log(appointment.Student_reg);
+        const stdMail = student[0].Email;
+        const url = `http://localhost:8080/mail/student/update/appointment`;
+        const subject = "Appointment cancelled";
+        const content = `
+        <p>Dear student,</p>
+        <p>Your appointment with ${staffDetails.First_name} ${
+          staffDetails.Last_name
+        } has been cancelled.</p>
+        <h2>Appointment Details:</h2>
+        <p>Date: ${getDate(from)}</p>
+        <p>Time: ${getTime(from)} - ${getTime(to)}</p>
+        <br>
+        <p>${staffDetails.First_name} ${staffDetails.Last_name}</p>
+        <p>${staffDetails.Email}</p>
+        <p>${staffDetails.Department}</p>
+      `;
+        const { data } = await axios.post(url, { stdMail, subject, content });
+        socket.emit("change appointment", msg);
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
 
@@ -392,7 +521,7 @@ const StaffCalendar = () => {
     console.log(e.data);
     if (e.data != null) {
       if (e.type === "DeleteAlert") {
-        deleteAppointment(selectedAptId);
+        deleteAppointment(selectedAptId, e.data.EventType, e.data.StdReg);
       } else if (
         // e.data.Subject !== "No title is provided" &&
         selectedAptId === undefined &&
@@ -415,21 +544,23 @@ const StaffCalendar = () => {
           e.data.EventType
         );
         setBlocked(true);
-        window.location.reload();
       } else if (
         e.data !== null &&
         selectedAptId !== undefined &&
         e.type === "Editor"
       ) {
+        const appointment = await getAppointment(selectedAptId);
         updateAppointment(
           e.data.Subject,
           e.data.Description,
           e.data.StartTime,
           e.data.EndTime,
           e.data.EventType,
-          selectedAptId
+          e.data.StdReg
         );
-        window.location.reload();
+        if (appointment.Student_reg === null) {
+          window.location.reload();
+        }
       }
     } else {
       console.log(true);
@@ -438,13 +569,40 @@ const StaffCalendar = () => {
 
   const onPopupOpen = (e) => {
     setSelectedAptId(e.data.Id);
+    console.log(e);
   };
 
-  const deleteAppointment = async (Id) => {
+  const deleteAppointment = async (Id, EventType, StdReg) => {
+    console.log(selectedStaffEmail);
     try {
       const url = `http://localhost:8080/db/appointment/${Id}`;
       const response = await axios.delete(url);
-      console.log(response.data);
+
+      const msg = { selectedStaffEmail, EventType };
+      if (EventType === "New") {
+        sendAppointmentDeleteMail(StdReg, EventType);
+      } else {
+        socket.emit("delete appointment", msg);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const sendAppointmentDeleteMail = async (StdReg, EventType) => {
+    console.log("hello");
+    const student = await getStudentDetails(StdReg);
+    const stdMail = student[0].Email;
+    try {
+      const url = `http://localhost:8080/mail/student/update/appointment`;
+      const subject = "Your appointment has been deleted";
+      const content = `
+        <p>Dear student,</p>
+        <p>Your appointment with ${staffDetails.First_name} ${staffDetails.Last_name} has been cancelled.</p>
+      `;
+      const { data } = await axios.post(url, { stdMail, subject, content });
+      const msg = { selectedStaffEmail, EventType };
+      socket.emit("delete appointment", msg);
     } catch (err) {
       console.log(err);
     }
@@ -452,23 +610,6 @@ const StaffCalendar = () => {
 
   return (
     <main>
-      {/* <div className="description">
-        <div className="dep-name">
-          <p className="abbr-name">
-            {JSON.parse(sessionStorage.getItem("department")) === "Computer"
-              ? "COM"
-              : JSON.parse(sessionStorage.getItem("department"))}
-          </p>
-          <p className="long-name">{getDepName()}</p>
-        </div>
-        <div className="staff-detail">
-          <img src={selectedStaffEmail.Picture_URL} alt="" className="staff-img" />
-          <div className="details">
-            <p className="staff-name">{`${selectedStaffEmail.First_name} ${selectedStaffEmail.Last_name}`}</p>
-            <p className="staff-email">{selectedStaffEmail.Email}</p>
-          </div>
-        </div>
-      </div> */}
       <div>
         <ColorCode />
       </div>
@@ -481,7 +622,6 @@ const StaffCalendar = () => {
             template: eventTemplate,
             ignoreWhitespace: true,
           }}
-          cellTemplate={eventTemplate}
           dragStart={onDragStart}
           dragStop={onDragStop}
           resizeStart={onResizeStart}
@@ -491,6 +631,7 @@ const StaffCalendar = () => {
           popupOpen={onPopupOpen}
           cssClass="schedule-cell-dimension"
           rowAutoHeight={true}
+          quickInfoOnSelectionEnd={true}
         >
           <ViewsDirective>
             <ViewDirective

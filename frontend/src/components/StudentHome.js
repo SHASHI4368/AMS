@@ -2,9 +2,7 @@ import React from "react";
 import Uni from "../resources/University.jpg";
 import { useEffect, useState } from "react";
 
-const StudentHome = () => {
-  
-
+const StudentHome = ({ socket }) => {
   return (
     <div className="caption">
       <h2>APPOINTMENT MANAGEMENT SYSTEM</h2>

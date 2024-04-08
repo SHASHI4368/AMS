@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import Logo from "../resources/Logo.png";
+import Logo from "../resources/LogoNew1.png";
 import "../styles/header.css";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
@@ -8,8 +8,7 @@ import DropdownButton from "./helpers/DropdownButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 
-const Header = () => {
- 
+const Header = ({ socket }) => {
   const [userType, setUserType] = useState(
     JSON.parse(sessionStorage.getItem("userType")) || "Student"
   );
@@ -48,6 +47,7 @@ const Header = () => {
       const response = await axios.get(url, {
         withCredentials: true,
       });
+      socket.disconnect();
       const accessToken = response.data.accessToken;
       return accessToken;
     } catch (err) {
@@ -57,10 +57,13 @@ const Header = () => {
 
   const handleStaffLogout = async () => {
     try {
-      const url = `http://localhost:8080/auth/logout`;
-      await axios.get(url, {
+      const url = `http://localhost:8080/db/staff/logout`;
+      const response = await axios.get(url, {
         withCredentials: true,
       });
+      socket.disconnect();
+      const accessToken = response.data.accessToken;
+      return accessToken;
     } catch (err) {
       console.log(err);
     }
@@ -72,7 +75,7 @@ const Header = () => {
       sessionStorage.setItem("authorized", JSON.stringify(false));
       sessionStorage.setItem("selectedStaffEmail", JSON.stringify(""));
       history.push("/login/staff");
-    } else {
+    } else if (userType === "Student") {
       handleStdLogout();
       sessionStorage.setItem("authorized", JSON.stringify(false));
       sessionStorage.setItem("regNumber", JSON.stringify(""));
@@ -92,6 +95,16 @@ const Header = () => {
 
   const handleClick = () => {
     setClicked(!clicked);
+  const handleAppointments = () => {
+    history.push("/staff/appointments");
+  };
+
+  const handleStudentHomeButton = () => {
+    history.push("/student/home");
+  };
+
+  const handleStaffHomeButton = () => {
+    history.push("/staff/home");
   };
 
   return (
@@ -100,7 +113,7 @@ const Header = () => {
       {JSON.parse(sessionStorage.getItem("authorized")) === true &&
         JSON.parse(sessionStorage.getItem("userType")) === "Student" && (
           <div className="buttons">
-            <button className="loginbtn" onClick={handleLogoutButton}>
+            <button className="loginbtn" onClick={handleStudentHomeButton}>
               HOME
             </button>
             <DropdownButton
@@ -108,9 +121,9 @@ const Header = () => {
               options={["DCEE", "DEIE", "DMME", "MENA", "Computer"]}
               handleOptionSelect={handleDepartmentSelect}
             />
-            <button className="loginbtn" id="appointments">
+            {/* <button className="loginbtn" id="appointments">
               APPOINTMENTS
-            </button>
+            </button> */}
             <button
               className="loginbtn"
               id="logout-button"
@@ -123,10 +136,14 @@ const Header = () => {
       {JSON.parse(sessionStorage.getItem("authorized")) === true &&
         JSON.parse(sessionStorage.getItem("userType")) === "Staff" && (
           <div className="buttons">
-            <button className="loginbtn" onClick={handleLogoutButton}>
+            <button className="loginbtn" onClick={handleStaffHomeButton}>
               HOME
             </button>
-            <button className="loginbtn" id="appointments">
+            <button
+              className="loginbtn"
+              id="appointments"
+              onClick={handleAppointments}
+            >
               APPOINTMENTS
             </button>
             <button
@@ -227,5 +244,6 @@ const Header = () => {
     </div>
   );
 };
+}
 
 export default Header;

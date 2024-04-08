@@ -24,6 +24,9 @@ const {
   handleStaffLogout,
   getStaffPassword,
   getStudentDetails,
+  getAppointment,
+  getAllConfirmedAppointments,
+  handleStaffRefreshToken,
 } = require("../controllers/dbController");
 const dbRouter = require("express").Router();
 
@@ -42,18 +45,21 @@ dbRouter.get("/staffList", getStaffList);
 dbRouter.post("/staff", addStaff);
 dbRouter.post("/student/login", handleStdLogin);
 dbRouter.post("/staff/login", handleStaffLogin);
-dbRouter.get("staff/logout", handleStaffLogout);
+dbRouter.get("/staff/logout", handleStaffLogout);
 dbRouter.get("/student/refresh", handleStdRefreshToken);
+dbRouter.get("/staff/refresh", handleStaffRefreshToken);
 dbRouter.get("/student/logout", handleStdLogout);
 dbRouter.get("/appointment/count/:Lecturer_mail", getAppointmentCount);
 dbRouter.get("/appointment/last", getLastAppointment);
 dbRouter.post("/appointment/add", addAppointment);
 dbRouter.get("/appointments/:Lecturer_mail", getAllAppointments);
+dbRouter.get("/appointments/confirmed/:Lecturer_mail", getAllConfirmedAppointments);
 dbRouter.get("/student/regnumber/:Email", getStudentRegNumber);
 dbRouter.put("/appointment", updateAppointment);
 dbRouter.delete("/appointment/:Id", deleteAppointment);
 dbRouter.get("/staff/:Email", getStaffByEmail);
 dbRouter.get("/staff/password/:Email", getStaffPassword);
+dbRouter.get("/appointment/:Id", getAppointment);
 // dbRouter.use(verifyJWT);
 
 module.exports = dbRouter;
@@ -100,8 +106,6 @@ module.exports = dbRouter;
 //     Verified boolean default false,
 //     primary key(Email)
 // );
-
-
 
 // const sqlite = require("sqlite3").verbose();
 

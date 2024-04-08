@@ -3,10 +3,7 @@ import axios from "axios";
 import "../styles/department.css";
 import StaffDisplay from "./helpers/StaffDisplay";
 
-const Department = ({ staffList }) => {
-  useEffect(() => {
-    console.log(JSON.parse(sessionStorage.getItem("staffList")));
-  }, []);
+const Department = () => {
 
   const getDepName = () => {
     const dep = JSON.parse(sessionStorage.getItem("department"));
