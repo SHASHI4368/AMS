@@ -140,14 +140,7 @@ const handleStdLogin = async (req, res) => {
         }
       });
 
-      res.cookie("jwt", refreshToken, {
-        httpOnly: true,
-        sameSite: "none",
-        secure: true,
-        maxAge: 1000 * 60 * 60 * 24,
-      });
-      // res.json({ accessToken: accessToken });
-      res.json({ Status: "Success" });
+      res.json({ Status: "Success", RefreshToken: refreshToken });
       
     });
   } catch (err) {
@@ -196,14 +189,7 @@ const handleStaffLogin = async (req, res) => {
           return res.status(500).json({ error: err.message });
         }
       });
-      res.cookie("jwt", refreshToken, {
-        httpOnly: true,
-        sameSite: "none",
-        secure: true,
-        maxAge: 1000 * 60 * 60 * 24,
-      });
-      // res.json({ accessToken: accessToken });
-      res.json({ Status: "Success"});
+      res.json({ Status: "Success", RefreshToken: refreshToken});
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });
@@ -228,11 +214,7 @@ const getStudentRegNumber = (req, res) => {
 };
 
 const handleStdRefreshToken = async (req, res) => {
-  const cookies = req.cookies;
-  if (!cookies.jwt) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-  const RefreshToken = cookies.jwt;
+  const RefreshToken = req.headers.authorization;
   //---------------------------------------------------------
   const sql = `select * from STUDENT where RefreshToken = ?`;
 
@@ -271,11 +253,7 @@ const handleStdRefreshToken = async (req, res) => {
 };
 
 const handleStaffRefreshToken = async (req, res) => {
-  const cookies = req.cookies;
-  if (!cookies.jwt) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-  const RefreshToken = cookies.jwt;
+  const RefreshToken = req.headers.authorization;
   //---------------------------------------------------------
   const sql = `select * from LECTURER where RefreshToken = ?`;
 

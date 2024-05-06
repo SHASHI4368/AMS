@@ -112,7 +112,6 @@ function App() {
 
   useEffect(() => {
     const getStdToken = async () => {
-      console.log("Getting token");
       try {
         const url = `http://localhost:8080/db/student/refresh`;
         const response = await axios.get(url, {
@@ -132,11 +131,13 @@ function App() {
     };
 
     const getStaffToken = async () => {
+      const jwt = JSON.parse(sessionStorage.getItem("jwt"));
       try {
+        const config = {
+          headers: { Authorization: jwt }, // Send JWT token in the headers
+        };
         const url = `http://localhost:8080/db/staff/refresh`;
-        const response = await axios.get(url, {
-          withCredentials: true,
-        });
+        const response = await axios.get(url, config);
         const accessToken = response.data.accessToken;
         if (accessToken !== undefined) {
           socket.connect();
@@ -148,6 +149,8 @@ function App() {
         console.log(err);
       }
     };
+
+
     if (JSON.parse(sessionStorage.getItem("userType")) === "Student") {
       if (getStdToken() !== undefined) {
         setAuthorized(true);

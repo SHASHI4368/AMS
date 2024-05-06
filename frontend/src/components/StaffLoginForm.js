@@ -19,6 +19,10 @@ const StaffLoginForm = ({ socket }) => {
       const body = { Email, Original_password };
       const response = await axios.post(url, body, { withCredentials: true });
       if (response.data.Status === "Success") {
+        sessionStorage.setItem(
+          "jwt",
+          JSON.stringify(response.data.RefreshToken)
+        );
         sessionStorage.setItem("authorized", JSON.stringify(true));
         console.log("Login successful");
         socket.connect();
@@ -36,9 +40,9 @@ const StaffLoginForm = ({ socket }) => {
     e.preventDefault();
     if (email === "" || password === "") {
       setMessage("Please fill all the fields");
-    } else if (!email.includes("eng.ruh.ac.lk")){
+    } else if (!email.includes("eng.ruh.ac.lk")) {
       setMessage("Invalid email");
-    } else{
+    } else {
       handleStaffLogin(
         JSON.parse(sessionStorage.getItem("selectedStaffEmail")),
         password

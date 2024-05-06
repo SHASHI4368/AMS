@@ -76,6 +76,7 @@ const StaffSignUpForm = ({ socket }) => {
           withCredentials: true,
         });
         if (response.data.Status === "Success") {
+          sessionStorage.setItem("jwt", JSON.stringify(response.data.RefreshToken));
           sessionStorage.setItem("authorized", JSON.stringify(true));
           console.log("Login successful");
           socket.connect();

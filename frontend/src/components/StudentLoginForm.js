@@ -31,8 +31,11 @@ const StudentLoginForm = ({ socket }) => {
     try {
       const url = `http://localhost:8080/db/student/login`;
       const response = await axios.post(url, { Email, Password });
-      console.log(response);
       if (response.data.Status === "Success") {
+        sessionStorage.setItem(
+          "jwt",
+          JSON.stringify(response.data.RefreshToken)
+        );
         sessionStorage.setItem("authorized", JSON.stringify(true));
         getRegNumber(Email);
         console.log("Login successful");

@@ -74,11 +74,13 @@ const Header = ({ socket }) => {
       handleStaffLogout();
       sessionStorage.setItem("authorized", JSON.stringify(false));
       sessionStorage.setItem("selectedStaffEmail", JSON.stringify(""));
+      sessionStorage.setItem("jwt", JSON.stringify(""));
       history.push("/login/staff");
     } else if (userType === "Student") {
       handleStdLogout();
       sessionStorage.setItem("authorized", JSON.stringify(false));
       sessionStorage.setItem("regNumber", JSON.stringify(""));
+      sessionStorage.setItem("jwt", JSON.stringify(""));
       history.push("/login/student");
     }
   };
