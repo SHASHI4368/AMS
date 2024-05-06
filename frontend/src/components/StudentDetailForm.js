@@ -50,7 +50,7 @@ const StudentDetailForm = () => {
     Password
   ) => {
     try {
-      const url = `http://localhost:8080/db/students`;
+      const url = `${process.env.REACT_APP_API_URL}/db/students`;
       const response = await axios.post(url, {
         Reg_number,
         First_name,
@@ -79,7 +79,7 @@ const StudentDetailForm = () => {
 
   const deleteTempUser = async (Email) => {
     try {
-      const url = `http://localhost:8080/db/tempUser/${Email}`;
+      const url = `${process.env.REACT_APP_API_URL}/db/tempUser/${Email}`;
       const response = await axios.delete(url);
       console.log(response.data);
     } catch (err) {

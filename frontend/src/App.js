@@ -23,7 +23,7 @@ import { message } from "antd";
 
 import { io } from "socket.io-client";
 
-const URL = "http://localhost:8080";
+const URL = process.env.REACT_APP_BACKEND_URL || "${process.env.REACT_APP_BACKEND_URL}";
 const socket = io(URL, {
   autoConnect: false,
 });
@@ -93,7 +93,7 @@ function App() {
   useEffect(() => {
     const getAllStaff = async () => {
       try {
-        const url = `http://localhost:8080/db/staffList`;
+        const url = `${process.env.REACT_APP_BACKEND_URL}/db/staffList`;
         const response = await axios.get(url);
         setStaffList(response.data);
         sessionStorage.setItem("staffList", JSON.stringify(response.data));
@@ -113,7 +113,7 @@ function App() {
   useEffect(() => {
     const getStdToken = async () => {
       try {
-        const url = `http://localhost:8080/db/student/refresh`;
+        const url = `${process.env.REACT_APP_BACKEND_URL}/db/student/refresh`;
         const response = await axios.get(url, {
           withCredentials: true,
         });
@@ -136,7 +136,7 @@ function App() {
         const config = {
           headers: { Authorization: jwt }, // Send JWT token in the headers
         };
-        const url = `http://localhost:8080/db/staff/refresh`;
+        const url = `${process.env.REACT_APP_BACKEND_URL}/db/staff/refresh`;
         const response = await axios.get(url, config);
         const accessToken = response.data.accessToken;
         if (accessToken !== undefined) {

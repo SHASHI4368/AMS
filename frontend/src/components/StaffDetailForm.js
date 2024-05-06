@@ -21,7 +21,7 @@ const StaffDetailForm = () => {
     const Email = JSON.parse(sessionStorage.getItem("staffEmail"));
     const getUser = async () => {
       try {
-        const url = `http://localhost:8080/db/tempUser/${Email}`;
+        const url = `${process.env.REACT_APP_API_URL}/db/tempUser/${Email}`;
         const response = await axios.get(url, {
           withCredentials: true,
         });
@@ -40,7 +40,7 @@ const StaffDetailForm = () => {
 
   const deleteTempUser = async (Email) => {
     try {
-      const url = `http://localhost:8080/db/tempUser/${Email}`;
+      const url = `${process.env.REACT_APP_API_URL}/db/tempUser/${Email}`;
       const response = await axios.delete(url);
       console.log(response.data);
     } catch (err) {
@@ -57,7 +57,7 @@ const StaffDetailForm = () => {
     Password
   ) => {
     try {
-      const url = `http://localhost:8080/db/staff`;
+      const url = `${process.env.REACT_APP_API_URL}/db/staff`;
       const response = await axios.post(url, {
         First_name,
         Last_name,

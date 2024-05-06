@@ -43,7 +43,7 @@ const Header = ({ socket }) => {
 
   const handleStdLogout = async () => {
     try {
-      const url = `http://localhost:8080/db/student/logout`;
+      const url = `${process.env.REACT_APP_API_URL}/db/student/logout`;
       const response = await axios.get(url, {
         withCredentials: true,
       });
@@ -57,7 +57,7 @@ const Header = ({ socket }) => {
 
   const handleStaffLogout = async () => {
     try {
-      const url = `http://localhost:8080/db/staff/logout`;
+      const url = `${process.env.REACT_APP_API_URL}/db/staff/logout`;
       const response = await axios.get(url, {
         withCredentials: true,
       });

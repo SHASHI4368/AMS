@@ -24,7 +24,7 @@ const StudentSignUpForm = (
   const sendVerificationMail = async (email, code) => {
     sessionStorage.setItem("stdEmail", JSON.stringify(stdEmail));
     try {
-      const url = `http://localhost:8080/mail/student/verify`;
+      const url = `${process.env.REACT_APP_API_URLL}/mail/student/verify`;
       const { data } = await axios.post(url, { email, code });
       console.log(data);
     } catch (err) {
@@ -34,7 +34,7 @@ const StudentSignUpForm = (
 
   const updateVerificationCode = async (Email, Verification_Code) => {
     try {
-      const url = `http://localhost:8080/db/tempUser`;
+      const url = `${process.env.REACT_APP_API_URLL}/db/tempUser`;
       const { data } = await axios.put(url, { Email, Verification_Code });
       console.log(data);
     } catch (err) {
@@ -44,7 +44,7 @@ const StudentSignUpForm = (
 
   const addTempUser = async (Email, Verification_Code) => {
     try {
-      const url = `http://localhost:8080/db/tempUser`;
+      const url = `${process.env.REACT_APP_API_URLL}/db/tempUser`;
       const { data } = await axios.post(url, { Email, Verification_Code });
       console.log(data);
     } catch (err) {
@@ -55,7 +55,7 @@ const StudentSignUpForm = (
   useEffect(() => {
     const getAllStudents = async () => {
       try {
-        const url = `http://localhost:8080/db/students`;
+        const url = `${process.env.REACT_APP_API_URLL}/db/students`;
         const response = await axios.get(url);
         setStudents(response.data);
       } catch (err) {
@@ -71,7 +71,7 @@ const StudentSignUpForm = (
 
     const getAllTempUsers = async () => {
       try {
-        const url = `http://localhost:8080/db/tempUsers`;
+        const url = `${process.env.REACT_APP_API_URLL}/db/tempUsers`;
         const response = await axios.get(url);
         setTempUsers(response.data);
       } catch (err) {
