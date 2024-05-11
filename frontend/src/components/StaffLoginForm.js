@@ -15,7 +15,7 @@ const StaffLoginForm = ({ socket }) => {
 
   const handleStaffLogin = async (Email, Original_password) => {
     try {
-      const url = `${process.env.REACT_APP_API_URL}/db/staff/login`;
+      const url = `http://localhost:8080/db/staff/login`;
       const body = { Email, Original_password };
       const response = await axios.post(url, body, { withCredentials: true });
       if (response.data.Status === "Success") {
@@ -53,7 +53,7 @@ const StaffLoginForm = ({ socket }) => {
   useEffect(() => {
     const getStaff = async () => {
       try {
-        const url = `${process.env.REACT_APP_API_URL}/login/login/success`;
+        const url = `http://localhost:8080/login/login/success`;
         const { data } = await axios.get(url, { withCredentials: true });
         console.log(data.user._json.email);
         // handleLogin(data.user._json.email);
@@ -71,7 +71,7 @@ const StaffLoginForm = ({ socket }) => {
 
   const handleGoogleAuth = (e) => {
     e.preventDefault();
-    window.open(`${process.env.REACT_APP_API_URL}/auth/google`, "_self");
+    window.open(`http://localhost:8080/auth/google`, "_self");
   };
 
   const handleEmailChange = (e) => {

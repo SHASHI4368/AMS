@@ -293,11 +293,7 @@ const handleStaffRefreshToken = async (req, res) => {
   
 
 const handleStdLogout = async (req, res) => {
-  const cookies = req.cookies;
-  if (!cookies.jwt) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-  const RefreshToken = cookies.jwt;
+  const RefreshToken = req.headers.authorization;
   //---------------------------------------------------------
   const sql = `select * from STUDENT where RefreshToken = ?`;
   try {
@@ -334,11 +330,7 @@ const handleStdLogout = async (req, res) => {
 };
 
 const handleStaffLogout = async (req, res) => {
-  const cookies = req.cookies;
-  if (!cookies.jwt) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-  const RefreshToken = cookies.jwt;
+  const RefreshToken = req.headers.authorization;
   //---------------------------------------------------------
   const sql = `select * from LECTURER where RefreshToken = ?`;
   try {

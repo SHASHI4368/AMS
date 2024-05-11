@@ -70,7 +70,7 @@ app.get("/db/students", (req, res) => {
 
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000", // Adjust this to match your React client's origin
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"],
   },
 });

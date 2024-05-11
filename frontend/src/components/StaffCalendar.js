@@ -140,7 +140,7 @@ const StaffCalendar = ({ socket }) => {
 
   const getAllAppointments = async (Lecturer_mail) => {
     try {
-      const url = `${process.env.REACT_APP_API_URL}/db/appointments/${Lecturer_mail}`;
+      const url = `http://localhost:8080/db/appointments/${Lecturer_mail}`;
       const response = await axios.get(url);
       return response.data;
     } catch (err) {
@@ -152,7 +152,7 @@ const StaffCalendar = ({ socket }) => {
     sessionStorage.setItem("isDragged", JSON.stringify(false));
     const getStaffDetails = async () => {
       try {
-        const url = `${process.env.REACT_APP_API_URL}/db//staff/${selectedStaffEmail}`;
+        const url = `http://localhost:8080/db//staff/${selectedStaffEmail}`;
         const response = await axios.get(url);
         setStaffDetails(response.data[0]);
       } catch (err) {
@@ -189,7 +189,7 @@ const StaffCalendar = ({ socket }) => {
     sessionStorage.setItem("isDragged", JSON.stringify(false));
     const getStaffDetails = async () => {
       try {
-        const url = `${process.env.REACT_APP_API_URL}/db//staff/${selectedStaffEmail}`;
+        const url = `http://localhost:8080/db//staff/${selectedStaffEmail}`;
         const response = await axios.get(url);
         setStaffDetails(response.data[0]);
       } catch (err) {
@@ -336,7 +336,7 @@ const StaffCalendar = ({ socket }) => {
     Apt_status
   ) => {
     try {
-      const url = `${process.env.REACT_APP_API_URL}/db/appointment/add`;
+      const url = `http://localhost:8080/db/appointment/add`;
       const response = await axios.post(url, {
         Id,
         Lecturer_mail,
@@ -362,7 +362,7 @@ const StaffCalendar = ({ socket }) => {
 
   const getLastAppointment = async () => {
     try {
-      const url = `${process.env.REACT_APP_API_URL}/db/appointment/last`;
+      const url = `http://localhost:8080/db/appointment/last`;
       const response = await axios.get(url);
       console.log(response.data);
       if (response.data.length === 0) {
@@ -384,7 +384,7 @@ const StaffCalendar = ({ socket }) => {
     StdReg
   ) => {
     try {
-      const url = `${process.env.REACT_APP_API_URL}/db/appointment`;
+      const url = `http://localhost:8080/db/appointment`;
       const response = await axios.put(url, {
         Id: selectedAptId,
         Subject,
@@ -405,7 +405,7 @@ const StaffCalendar = ({ socket }) => {
 
   const getStudentDetails = async (Reg_number) => {
     try {
-      const url = `${process.env.REACT_APP_API_URL}/db/student/details/${Reg_number}`;
+      const url = `http://localhost:8080/db/student/details/${Reg_number}`;
       const { data } = await axios.get(url);
       return data;
     } catch (err) {
@@ -424,7 +424,7 @@ const StaffCalendar = ({ socket }) => {
 
   const getAppointment = async (Id) => {
     try {
-      const url = `${process.env.REACT_APP_API_URL}/db/appointment/${Id}`;
+      const url = `http://localhost:8080/db/appointment/${Id}`;
       const response = await axios.get(url);
       return response.data[0];
     } catch (err) {
@@ -438,7 +438,7 @@ const StaffCalendar = ({ socket }) => {
       try {
         const student = await getStudentDetails(StdReg);
         const stdMail = student[0].Email;
-        const url = `${process.env.REACT_APP_API_URL}/mail/student/update/appointment`;
+        const url = `http://localhost:8080/mail/student/update/appointment`;
         const subject = "Change of appointment time";
         const content = `
         <p>Dear student,</p>
@@ -466,7 +466,7 @@ const StaffCalendar = ({ socket }) => {
         const student = await getStudentDetails(appointment.Student_reg);
         console.log(appointment.Student_reg);
         const stdMail = student[0].Email;
-        const url = `${process.env.REACT_APP_API_URL}/mail/student/update/appointment`;
+        const url = `http://localhost:8080/mail/student/update/appointment`;
         const subject = "Appointment confirmed";
         const content = `
         <p>Dear student,</p>
@@ -493,7 +493,7 @@ const StaffCalendar = ({ socket }) => {
         const student = await getStudentDetails(appointment.Student_reg);
         console.log(appointment.Student_reg);
         const stdMail = student[0].Email;
-        const url = `${process.env.REACT_APP_API_URL}/mail/student/update/appointment`;
+        const url = `http://localhost:8080/mail/student/update/appointment`;
         const subject = "Appointment cancelled";
         const content = `
         <p>Dear student,</p>
@@ -575,7 +575,7 @@ const StaffCalendar = ({ socket }) => {
   const deleteAppointment = async (Id, EventType, StdReg) => {
     console.log(selectedStaffEmail);
     try {
-      const url = `${process.env.REACT_APP_API_URL}/db/appointment/${Id}`;
+      const url = `http://localhost:8080/db/appointment/${Id}`;
       const response = await axios.delete(url);
 
       const msg = { selectedStaffEmail, EventType };
@@ -594,7 +594,7 @@ const StaffCalendar = ({ socket }) => {
     const student = await getStudentDetails(StdReg);
     const stdMail = student[0].Email;
     try {
-      const url = `${process.env.REACT_APP_API_URL}/mail/student/update/appointment`;
+      const url = `http://localhost:8080/mail/student/update/appointment`;
       const subject = "Your appointment has been deleted";
       const content = `
         <p>Dear student,</p>

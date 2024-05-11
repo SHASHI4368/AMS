@@ -23,7 +23,8 @@ import { message } from "antd";
 
 import { io } from "socket.io-client";
 
-const URL = process.env.REACT_APP_BACKEND_URL || "${process.env.REACT_APP_BACKEND_URL}";
+// This should be changed to the URL of the backend server manually
+const URL = "http://localhost:8080";
 const socket = io(URL, {
   autoConnect: false,
 });
@@ -93,7 +94,7 @@ function App() {
   useEffect(() => {
     const getAllStaff = async () => {
       try {
-        const url = `${process.env.REACT_APP_BACKEND_URL}/db/staffList`;
+        const url = `http://localhost:8080/db/staffList`;
         const response = await axios.get(url);
         setStaffList(response.data);
         sessionStorage.setItem("staffList", JSON.stringify(response.data));
@@ -112,12 +113,13 @@ function App() {
 
   useEffect(() => {
     const getStdToken = async () => {
+      const jwt = JSON.parse(sessionStorage.getItem("jwt"));
       try {
-        const url = `${process.env.REACT_APP_BACKEND_URL}/db/student/refresh`;
-        const response = await axios.get(url, {
-          withCredentials: true,
-        });
-
+        const config = {
+          headers: { Authorization: jwt }
+        };
+        const url = `http://localhost:8080/db/student/refresh`;
+        const response = await axios.get(url, config);
         const accessToken = response.data.accessToken;
         if (accessToken !== undefined) {
           socket.connect();
@@ -136,7 +138,7 @@ function App() {
         const config = {
           headers: { Authorization: jwt }, // Send JWT token in the headers
         };
-        const url = `${process.env.REACT_APP_BACKEND_URL}/db/staff/refresh`;
+        const url = `http://localhost:8080/db/staff/refresh`;
         const response = await axios.get(url, config);
         const accessToken = response.data.accessToken;
         if (accessToken !== undefined) {
@@ -154,12 +156,10 @@ function App() {
     if (JSON.parse(sessionStorage.getItem("userType")) === "Student") {
       if (getStdToken() !== undefined) {
         setAuthorized(true);
-        // sessionStorage.setItem("authorized", JSON.stringify(true));
       }
     } else if (JSON.parse(sessionStorage.getItem("userType")) === "Staff") {
       if (getStaffToken() !== undefined) {
         setAuthorized(true);
-        // sessionStorage.setItem("authorized", JSON.stringify(true));
       }
     }
   }, []);

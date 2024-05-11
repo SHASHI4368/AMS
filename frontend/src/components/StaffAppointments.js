@@ -9,7 +9,7 @@ const StaffAppointments = ({ socket }) => {
 
   const getAllAppointments = async (Lecturer_mail) => {
     try {
-      const url = `${process.env.REACT_APP_API_URL}/db/appointments/confirmed/${Lecturer_mail}`;
+      const url = `http://localhost:8080/db/appointments/confirmed/${Lecturer_mail}`;
       const response = await axios.get(url);
       console.log(response.data);
       setAppointments(response.data);

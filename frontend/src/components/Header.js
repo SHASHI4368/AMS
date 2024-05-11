@@ -22,7 +22,6 @@ const Header = ({ socket }) => {
     if (sessionStorage.getItem("authorized") === null) {
       sessionStorage.setItem("authorized", JSON.stringify(false));
     }
-    console.log(JSON.parse(sessionStorage.getItem("authorized")));
   }, []);
 
   const history = useHistory();
@@ -42,11 +41,13 @@ const Header = ({ socket }) => {
   };
 
   const handleStdLogout = async () => {
+    const jwt = JSON.parse(sessionStorage.getItem("jwt"));
     try {
-      const url = `${process.env.REACT_APP_API_URL}/db/student/logout`;
-      const response = await axios.get(url, {
-        withCredentials: true,
-      });
+      const config = {
+        headers: { Authorization: jwt },
+      };
+      const url = `http://localhost:8080/db/student/logout`;
+      const response = await axios.get(url, config);
       socket.disconnect();
       const accessToken = response.data.accessToken;
       return accessToken;
@@ -56,11 +57,13 @@ const Header = ({ socket }) => {
   };
 
   const handleStaffLogout = async () => {
+    const jwt = JSON.parse(sessionStorage.getItem("jwt"));
     try {
-      const url = `${process.env.REACT_APP_API_URL}/db/staff/logout`;
-      const response = await axios.get(url, {
-        withCredentials: true,
-      });
+      const config = {
+        headers: { Authorization: jwt },
+      };
+      const url = `http://localhost:8080/db/staff/logout`;
+      const response = await axios.get(url, config);
       socket.disconnect();
       const accessToken = response.data.accessToken;
       return accessToken;
