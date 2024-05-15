@@ -42,6 +42,8 @@ const getColor = (status) => {
       return "#32CD32";
     case "Unable":
       return "#87CEFA";
+    case "Done":
+      return "#FF4500";
     default:
       return "#FFD700";
   }
@@ -247,7 +249,7 @@ const StaffCalendar = ({ socket }) => {
       case "Unable":
         return ["Unable", "Confirmed"];
       case "Confirmed":
-        return ["Confirmed", "Unable"];
+        return ["Confirmed", "Unable", "Done"];
       default:
         return ["Blocked"];
     }
@@ -500,6 +502,32 @@ const StaffCalendar = ({ socket }) => {
         <p>Your appointment with ${staffDetails.First_name} ${
           staffDetails.Last_name
         } has been cancelled.</p>
+        <h2>Appointment Details:</h2>
+        <p>Date: ${getDate(from)}</p>
+        <p>Time: ${getTime(from)} - ${getTime(to)}</p>
+        <br>
+        <p>${staffDetails.First_name} ${staffDetails.Last_name}</p>
+        <p>${staffDetails.Email}</p>
+        <p>${staffDetails.Department}</p>
+      `;
+        const { data } = await axios.post(url, { stdMail, subject, content });
+        socket.emit("change appointment", msg);
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (Apt_status === "Done") {
+      try {
+        const appointment = await getAppointment(selectedAptId);
+        const student = await getStudentDetails(appointment.Student_reg);
+        console.log(appointment.Student_reg);
+        const stdMail = student[0].Email;
+        const url = `http://localhost:8080/mail/student/update/appointment`;
+        const subject = "Appointment Done";
+        const content = `
+        <p>Dear student,</p>
+        <p>Your appointment with ${staffDetails.First_name} ${
+          staffDetails.Last_name
+        } has been successfully done.</p>
         <h2>Appointment Details:</h2>
         <p>Date: ${getDate(from)}</p>
         <p>Time: ${getTime(from)} - ${getTime(to)}</p>
